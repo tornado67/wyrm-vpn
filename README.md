@@ -20,7 +20,7 @@ and make sure that interface names under
 eth0_interface
 wlan0_interface
 ```
-are correct and run making sure `inventory.ini` contains correct raspberry host:
+are correct and run `wyrm.yml` playbook making sure `inventory.ini` contains correct raspberry host:
 
 
 
