@@ -3,7 +3,7 @@
 ## Installation
 
 
-Currently this project works only with WireGuard VPN servers.
+Currently this project works only with WireGuard VPN servers and Raspbian.
 
 
 Under `ansible/roles/wyrm/defaults/main.yml` set:
