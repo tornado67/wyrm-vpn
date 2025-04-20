@@ -1,0 +1,24 @@
+---
+eth0_interface: eth0
+wlan0_interface: wlan0
+wlan0_ip: 192.168.2.1
+wlan0_netmask: 24
+wlan0_cidr: 192.168.2.0/24
+wlan0_dhcp_range_start: 192.168.2.100
+wlan0_dhcp_range_end: 192.168.2.200
+
+wifi_ssid: WyrmVPN
+wifi_password: SecurePassword123
+wifi_channel: 6
+wifi_country_code: US
+
+wireguard_interface: wg0
+wireguard_port: 51820
+wireguard_client_private_key: ""
+wireguard_server_public_key: ""
+wireguard_server_endpoint: "MYSERVER:51280"
+wireguard_allowed_ips: "0.0.0.0/0, ::/0"
+wireguard_client_ip: "10.0.0.2/24" 
+wireguard_persistent_keepalive: 25
+
+dns_server: 8.8.8.8

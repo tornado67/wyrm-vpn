@@ -1,0 +1,154 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - hostapd
+      - dnsmasq
+      - wireguard
+      - wireguard-tools
+      - iptables
+      - iptables-persistent
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Ensure network interfaces are managed by systemd-networkd
+  ansible.builtin.systemd:
+    name: systemd-networkd
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Kernel performance tuning
+  ansible.builtin.copy:
+    src: 99-performance.conf
+    dest: /etc/sysctl.d/99-performance.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Apply sysctl settings
+
+- name: Disable and stop wpa_supplicant
+  ansible.builtin.systemd:
+    name: wpa_supplicant
+    enabled: no
+    state: stopped
+  become: yes
+
+- name: Configure eth0 for DHCP
+  ansible.builtin.template:
+    src: eth0.network.j2
+    dest: /etc/systemd/network/20-eth0.network
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart systemd-networkd
+
+- name: Configure dhcpcd
+  ansible.builtin.template:
+    src: dhcpcd.conf.j2
+    dest: /etc/dhcpcd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart systemd-networkd
+
+- name: Configure wlan0 with static IP
+  ansible.builtin.template:
+    src: wlan0.network.j2
+    dest: /etc/systemd/network/25-wlan0.network
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart systemd-networkd
+
+- name: Unmask hostapd service
+  ansible.builtin.systemd:
+    name: hostapd
+    masked: no
+  become: yes
+
+- name: Configure hostapd for Wi-Fi AP
+  ansible.builtin.template:
+    src: hostapd.conf.j2
+    dest: /etc/hostapd/hostapd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart hostapd
+
+- name: Enable and start hostapd
+  ansible.builtin.systemd:
+    name: hostapd
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Configure dnsmasq for DHCP
+  ansible.builtin.template:
+    src: dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart dnsmasq
+
+- name: Enable and start dnsmasq
+  ansible.builtin.systemd:
+    name: dnsmasq
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Configure WireGuard client
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    group: root
+    mode: '0600'
+  become: yes
+  notify: Restart wireguard
+
+- name: Enable and start WireGuard
+  ansible.builtin.systemd:
+    name: wg-quick@wg0
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Enable IP forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+  become: yes
+
+- name: Configure iptables for NAT and forwarding
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: "{{ wireguard_interface }}"
+    jump: MASQUERADE
+    state: present
+  become: yes
+
+- name: Ensure /etc/iptables.rules file exists
+  ansible.builtin.file:
+    path: /etc/iptables.rules
+    owner: root
+    group: root
+    mode: '0640'
+    state: touch
+
+- name: Save iptables rules
+  ansible.builtin.shell: iptables-save > /etc/iptables.rules
+  become: yes
+  changed_when: false

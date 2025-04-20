@@ -1,0 +1,6 @@
+---
+- name: Set up GhostDragonVPN (Raspberry Pi Wi-Fi router with WireGuard VPN)
+  hosts: rpi
+  become: yes
+  roles:
+    - wyrm

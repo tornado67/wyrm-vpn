@@ -1,0 +1,29 @@
+---
+- name: Restart systemd-networkd
+  ansible.builtin.systemd:
+    name: systemd-networkd
+    state: restarted
+  become: yes
+
+- name: Restart hostapd
+  ansible.builtin.systemd:
+    name: hostapd
+    state: restarted
+  become: yes
+
+- name: Restart dnsmasq
+  ansible.builtin.systemd:
+    name: dnsmasq
+    state: restarted
+  become: yes
+
+- name: Restart wireguard
+  ansible.builtin.systemd:
+    name: wg-quick@wg0
+    state: restarted
+  become: yes
+
+- name: Apply sysctl settings
+  ansible.builtin.shell: sysctl -p /etc/sysctl.d/99-performance.conf
+  changed_when: true
+  become: yes
