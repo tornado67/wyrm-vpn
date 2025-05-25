@@ -5,7 +5,7 @@
 
 Currently this project works only with WireGuard VPN servers and Raspbian.
 
-This setup expects you to have a DHCP server running on your local machine and leasing addresses to any device connected to the ethernet port  to which your RaspberryPI is connected.
+This setup expects you to have a **DHCP server running on your local machine** and leasing addresses to any device connected to the ethernet port to which your RaspberryPI is connected.
 
 
 Under `ansible/roles/wyrm/defaults/main.yml` set:
